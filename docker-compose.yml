@@ -1,0 +1,46 @@
+version: '3.7'
+services:
+  web:
+    build: 
+      context: .
+      target: nginx
+    image: covidledger_web:dev-0.0.1
+    depends_on:
+      - db
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/covidledger:cached
+      - ./nginx.conf:/etc/nginx/conf.d/covidledger.conf
+
+  php:
+    build:
+      context: .
+      target: php
+    image: covidledger_php:dev-0.0.1
+    depends_on:
+      - db
+    ports:
+      - "9000"
+    volumes:
+      - .:/var/www/covidledger:cached
+
+  db:
+    image: mysql:5.7.29
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: covidledger_development
+      MYSQL_ROOT_PASSWORD: dev_root_password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./mysql.cnf:/etc/mysql/my.cnf
+
+volumes:
+  dbdata:
+  php_data:
